@@ -1,6 +1,4 @@
-/**
- * Created by Zieciu on 2015-05-09.
- */
+package plny.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlElement;
@@ -8,6 +6,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlAccessorType;
 import java.util.List;
 
+/**
+ * Created by Zieciu on 2015-05-09.
+ */
 @XmlRootElement(name = "reviews")
 @XmlAccessorType (XmlAccessType.FIELD)
 public class Reviews {

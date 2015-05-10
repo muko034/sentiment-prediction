@@ -1,9 +1,10 @@
-/**
- * Created by Zieciu on 2015-05-09.
- */
+package plny.model;
 
 import javax.xml.bind.annotation.*;
 
+/**
+ * Created by Zieciu on 2015-05-09.
+ */
 @XmlRootElement(name = "review")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Review {
