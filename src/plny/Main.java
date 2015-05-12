@@ -16,6 +16,7 @@ public class Main {
         System.out.println("Hello World!");
 
         Input input = new Input();
+        PolarityBasic pb = new  PolarityBasic();
 
         try {
             input.append(PATH);
@@ -23,11 +24,27 @@ public class Main {
         } catch (JAXBException e) {
             e.printStackTrace();
         }
+        Set<Integer> keys = input.getReviews().keySet();
+
+        System.out.println("START TRAIN");
+
+        for(Integer i : keys)
+        {
+            int amountToTrain= (int)(input.getReviews().get(i). size()* 0.75) ;
+            pb.train(input.getReviews().get(i).subList(0, amountToTrain));
+        }
+
+        System.out.println("START EVALUATE");
+        for(Integer i : keys)
+        {
+            int firstToEvaluate= (int)(input.getReviews().get(i). size()* 0.75)+1 ;
+            pb.evaluate(input.getReviews().get(i).subList(firstToEvaluate,input.getReviews().get(i).size()));
+        }
 
         System.out.println(input.getReviews().size());
         System.out.println(input.getReviews().get(1).size());
         System.out.println(input.getReviews().get(1).get(5).getReview_text());
-        Set<Integer> keys = input.getReviews().keySet();
+
         int sum = 0;
         for (Integer i : keys) {
             sum += input.getReviews().get(i).size();
