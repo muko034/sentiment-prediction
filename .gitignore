@@ -34,6 +34,9 @@
 # IntelliJ
 /out/
 /libs/
+/model/
+/result/
+/svm_data/
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
