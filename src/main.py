@@ -43,10 +43,13 @@ def main():
 
     if options.clean:
         if os.path.exists(MODEL_DIR):
+            print "removing " + MODEL_DIR
             shutil.rmtree(MODEL_DIR)
         if os.path.exists(RESULT_DIR):
+            print "removing " + RESULT_DIR
             shutil.rmtree(RESULT_DIR)
         if os.path.exists(DATASVM_DIR):
+            print "removing " + DATASVM_DIR
             shutil.rmtree(DATASVM_DIR)
         return
 
@@ -91,8 +94,10 @@ def parse_oprions():
                       help="set libsmv path")
     parser.add_option("--libshorttext", dest="libshorttext", default=LIBSHORTTEXT_DIR,
                       help="set libshorttext path")
-    parser.add_option("-m", type="int", dest="method", default=0)
-    parser.add_option("-d", type="int", dest="domain", default=0)
+    parser.add_option("-m", "--method", type="int", dest="method", default=0,
+                      help="set method 0-CLASSIFICATION, 1-REGRESSION")
+    parser.add_option("-d", "--domain", type="int", dest="domain", default=0,
+                      help="set domain 0-BOOKS, 1-DVD, 2-ELECTRONICS, 3-KITCHEN")
     parser.add_option("-c", "--clean",
                       action="store_true", dest="clean")
     parser.add_option("-v", "--verbose",
@@ -127,7 +132,7 @@ def train(src, method):
 	files = src.split("/")
 
 	if method == CLASSIFICATION:
-            cmd =  "python " + LIBSHORTTEXT_DIR + "text-train.py " + src
+            cmd =  "python " + LIBSHORTTEXT_DIR + "text-train.py -f " + src
             dst_dir = MODEL_DIR+files[-2]+"/"+METHODS_DIRS[method]
         elif method == REGRESSION:
             cmd = LIBSVM_DIR + "svm-train -s 3 -t 2 -c 20 -g 64 -p 1 " + src
