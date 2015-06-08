@@ -13,7 +13,7 @@ public class PolarityBasic {
     //DynamicLMClassifier<NGramProcessLM> mClassifier;
     NaiveBayesClassifier mClassifier;
     public PolarityBasic() {
-        mCategories = new String[]{"1.0", "2.0", "3.0", "4.0", "5.0"};
+        mCategories = new String[]{"positive", "negative"};
         int nGram = 8;
         //mClassifier = DynamicLMClassifier.createNGramProcess(mCategories,nGram);
         mClassifier = new NaiveBayesClassifier(mCategories,new IndoEuropeanTokenizerFactory());
@@ -24,10 +24,13 @@ public class PolarityBasic {
         int numTrainingChars = 0;
         System.out.println("\nTraining.");
         for (Review r : list) {
-            String category = Double.toString(r.getRating());
-            Classification classification
-                    = new Classification(category);
-            ++numTrainingCases;;
+            //String category = Double.toString(r.getRating());
+            Classification classification ;
+            if(r.getRating() < 3)
+                classification = new Classification("negative");
+            else
+                classification = new Classification("positive");
+            ++numTrainingCases;
             numTrainingChars += r.getReview_text().length();
             Classified<CharSequence> classified
                     = new Classified<CharSequence>(r.getReview_text(),classification);
@@ -43,7 +46,11 @@ public class PolarityBasic {
         int numTests = 0;
         int numCorrect = 0;
         for (Review r : list) {
-            String category = Double.toString(r.getRating());
+            String category ;
+            if(r.getRating() < 3)
+                category = "negative";
+            else
+                category = "positive";
             ++numTests;
             Classification classification
                     = mClassifier.classify(r.getReview_text());
