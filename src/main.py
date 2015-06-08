@@ -7,10 +7,11 @@ import os
 import shutil
 
 os.chdir("..")
-# CONSTANTS DEFINITIONS
+# CONSTANTS
 PROJECT_DIR=os.getcwd()+"/"
 LIBSVM_DIR = PROJECT_DIR+"libs/libsvm-3.20/"
 LIBSHORTTEXT_DIR = PROJECT_DIR+"libs/libshorttext-1.1/"
+JAVA_DIR = "/usr/bin/"
 DATA_DIR=PROJECT_DIR+"data/"
 DATASVM_DIR=DATA_DIR+"svm_data/"
 DATALABELS_DIR=DATA_DIR+"labels/"
@@ -30,28 +31,16 @@ MODEL_LIBSHORTTEXT=TRAIN_TXT+".model"
 RESULT="result.txt"
 CLASSIFICATION=0
 REGRESSION=1
+BAYES=2
 BOOKS = 0
 DVD = 1
 ELECTRONICS = 2
 KITCHEN = 3
 DOMAIN_DIRS = [ BOOKS_DIR, DVD_DIR, ELECTRONICS_DIR, KITCHEN_DIR ]
-METHODS_DIRS = [ "classification/", "regression/" ]
+METHODS_DIRS = [ "classification/", "regression/", "" ]
 
 def main():
-    print "hello world\n"
     parse_oprions()
-
-    if options.clean:
-        if os.path.exists(MODEL_DIR):
-            print "removing " + MODEL_DIR
-            shutil.rmtree(MODEL_DIR)
-        if os.path.exists(RESULT_DIR):
-            print "removing " + RESULT_DIR
-            shutil.rmtree(RESULT_DIR)
-        if os.path.exists(DATASVM_DIR):
-            print "removing " + DATASVM_DIR
-            shutil.rmtree(DATASVM_DIR)
-        return
 
     path_svm = DATASVM_DIR + DOMAIN_DIRS[options.domain] + METHODS_DIRS[options.method]
     train_path_svm = path_svm + TRAIN_SVM
@@ -59,6 +48,7 @@ def main():
     model_path = MODEL_DIR + DOMAIN_DIRS[options.domain] + METHODS_DIRS[options.method]
     result_path =  RESULT_DIR + DOMAIN_DIRS[options.domain] + METHODS_DIRS[options.method] + RESULT
 
+    path_txt = ""
     if options.method == CLASSIFICATION:
         path_txt = DATALABELS_DIR
         model_path += MODEL_LIBSHORTTEXT
@@ -79,8 +69,8 @@ def main():
         convert(test_path_txt, test_path_svm)
         train(train_path_svm, options.method)
         predict(test_path_svm, model_path, result_path, options.method)
-
-    
+    elif options.method == BAYES:
+        bayes(options.domain)
 
 
     
@@ -88,30 +78,40 @@ def parse_oprions():
     global options
     usage = "usage: %prog [options] arg"
     parser = OptionParser(usage)
-    parser.add_option("-f", "--file", dest="filename",
-                      help="read data from FILENAME")
-    parser.add_option("--libsmv", dest="libsmv", default=LIBSVM_DIR,
+    parser.add_option("-j", "--java", dest="java", default=JAVA_DIR,
+                      help="set java directory ")
+    parser.add_option("--libsmv", dest="libsvm", default=LIBSVM_DIR,
                       help="set libsmv path")
     parser.add_option("--libshorttext", dest="libshorttext", default=LIBSHORTTEXT_DIR,
                       help="set libshorttext path")
     parser.add_option("-m", "--method", type="int", dest="method", default=0,
-                      help="set method 0-CLASSIFICATION, 1-REGRESSION")
+                      help="set method 0-CLASSIFICATION, 1-REGRESSION, 2-BAYES")
     parser.add_option("-d", "--domain", type="int", dest="domain", default=0,
                       help="set domain 0-BOOKS, 1-DVD, 2-ELECTRONICS, 3-KITCHEN")
     parser.add_option("-c", "--clean",
                       action="store_true", dest="clean")
-    parser.add_option("-v", "--verbose",
-                      action="store_true", dest="verbose")
-    parser.add_option("-q", "--quiet",
-                      action="store_false", dest="verbose")
 
     (options, args) = parser.parse_args()
+
+    if options.clean:
+        if os.path.exists(MODEL_DIR):
+            print "removing " + MODEL_DIR
+            shutil.rmtree(MODEL_DIR)
+        if os.path.exists(RESULT_DIR):
+            print "removing " + RESULT_DIR
+            shutil.rmtree(RESULT_DIR)
+        if os.path.exists(DATASVM_DIR):
+            print "removing " + DATASVM_DIR
+            shutil.rmtree(DATASVM_DIR)
+        exit()
 
     #if len(args) != 1:
         #parser.error("incorrect number of arguments.\n\t\ttype \""+__file__+" -h\" for mor information")
 
-    if options.verbose:
-        print "reading %s..." % options.filename
+    if options.method < 0 or options.method > 2:
+        parser.error("paremetr method out of range [0, 1]")
+    if options.domain < 0 or options.domain > 3:
+        parser.error("paremetr domain out of range [0, 3]")
         
 
 def convert(src, dst):
@@ -132,7 +132,7 @@ def train(src, method):
 	files = src.split("/")
 
 	if method == CLASSIFICATION:
-            cmd =  "python " + LIBSHORTTEXT_DIR + "text-train.py -f " + src
+            cmd =  "python " + LIBSHORTTEXT_DIR + "text-train.py -f -G 1 " + src
             dst_dir = MODEL_DIR+files[-2]+"/"+METHODS_DIRS[method]
         elif method == REGRESSION:
             cmd = LIBSVM_DIR + "svm-train -s 3 -t 2 -c 20 -g 64 -p 1 " + src
@@ -176,6 +176,17 @@ def predict(test_data, model, result, method):
     	    if not os.path.exists(svmdir):
     		os.makedirs(svmdir)
     	    shutil.move(PROJECT_DIR+TEST_SVM, svmdir+TEST_SVM)
+
+def bayes(domain):
+    tempdir=os.getcwd()
+    os.chdir(PROJECT_DIR)
+    
+    cmd = JAVA_DIR+"java -jar dist/sentiment-bayes.jar " + str(domain)
+    print cmd + "\n"
+    subprocess.call(cmd, shell=True)
+
+    os.chdir(tempdir)
+    
 
 if __name__ == "__main__":
     main()

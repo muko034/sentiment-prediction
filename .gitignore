@@ -37,6 +37,7 @@
 /model/
 /result/
 /data/svm_data/
+/dist/
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
