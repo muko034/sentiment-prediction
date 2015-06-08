@@ -1,4 +1,4 @@
-package plny.model;
+package model;
 
 import com.aliasi.classify.DynamicLMClassifier;
 import com.aliasi.classify.NaiveBayesClassifier;
@@ -17,6 +17,7 @@ public class PolarityBasic {
         int nGram = 8;
         //mClassifier = DynamicLMClassifier.createNGramProcess(mCategories,nGram);
         mClassifier = new NaiveBayesClassifier(mCategories,new IndoEuropeanTokenizerFactory());
+        
     }
 
     public void train(List<Review> list){
@@ -43,8 +44,11 @@ public class PolarityBasic {
 
     public void evaluate(List<Review> list) {
         System.out.println("\nEvaluating.");
-        int numTests = 0;
+        double tp,tn,fp,fn;
+        double P,R;
         int numCorrect = 0;
+        tp=tn=fp=fn=0;
+        int numTests = 0;
         for (Review r : list) {
             String category ;
             if(r.getRating() < 3)
@@ -54,13 +58,24 @@ public class PolarityBasic {
             ++numTests;
             Classification classification
                     = mClassifier.classify(r.getReview_text());
-            if (classification.bestCategory().equals(category))
-                ++numCorrect;
+            if (classification.bestCategory().equals(category) && category.equals("positive"))
+                ++tp;
+            if (classification.bestCategory().equals(category) && category.equals("negative"))
+                ++tn;
+            if (!classification.bestCategory().equals(category) && category.equals("negative"))
+                ++fp;
+            if (!classification.bestCategory().equals(category) && category.equals("positive"))
+                ++fn;
         }
-
+        numCorrect = (int)(tp + tn) ;
+        P=(double)((tp)/(tp+fp)) ;
+        R=(double)((tp)/(tp+fn));
         System.out.println("  # Test Cases=" + numTests);
         System.out.println("  # Correct=" + numCorrect);
-        System.out.println("  % Correct="+ ((double)numCorrect)/(double)numTests);
+        System.out.println("  # ACC=" + (tp+tn)/(tp+tn+fp+fn));
+        System.out.println("  # P=" + P);
+        System.out.println("  # R=" + R);
+        System.out.println("  # F1=" + (2*P*R)/(P+R));
     }
 
 
