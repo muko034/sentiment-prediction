@@ -1,78 +1,66 @@
 package plny;
 
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.bind.JAXBException;
 import plny.model.*;
 
-import javax.xml.bind.JAXBException;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.Set;
 
 public class Main {
 
     public static void main(String[] args) throws FileNotFoundException {
-
-        final String PATH = "sorted_data_acl/books/negative.review";
-        final String PATH1 = "sorted_data_acl/books/positive.review";
-//        final String PATH = "sorted_data_acl/kitchen_&_housewares/unlabeled.review";
-
-        System.out.println("Hello World!");
+        final String books = "books/";
+        final String dvd = "dvd/";
+        final String electronics = "electronics/";
+        final String kitchen = "kitchen/";
+        final String dataDir = "data/xml/" ;
+        final String positive = "positive.review" ;
+        final String negative = "negative.review";
+        final String [] domainsPositive = {dataDir+books+positive,dataDir+dvd+positive,dataDir+electronics+positive,
+                                            dataDir+kitchen+positive} ;
+        final String [] domainsNegative = {dataDir+books+negative,dataDir+dvd+negative,dataDir+electronics+negative,
+                                            dataDir+kitchen+negative} ;
+        if(args.length != 1)
+        {
+            System.out.println("Error wrong number of arguments!") ;
+            return ;
+        }
+        int domain = Integer.parseInt(args[0]) ;
+        if(domain < 0 || domain > 3)
+        {
+            System.out.println("Error parametr out of range! [0,1,2,3]") ;
+            return ;
+        }
+        
 
         Input input = new Input();
-        //PolarityBasic pb = new  PolarityBasic();
+        PolarityBasic pb = new  PolarityBasic();
 
         try {
-            input.append(PATH);
-            input.append(PATH1);
+            input.append(domainsPositive[domain]);
+            input.append(domainsNegative[domain]);
         } catch (JAXBException e) {
             e.printStackTrace();
         }
-        PrintWriter zapis = new PrintWriter("rating/books_training.txt");
-        PrintWriter zapis2 = new PrintWriter("rating/books_evaluate.txt");
-
+        
+        List<Review> trainSet = new ArrayList<Review>();
+        List<Review> testSet = new ArrayList<Review>();
+        
         for(Integer i : input.getReviews().keySet())
         {
-
+            //Collections.shuffle(input.getReviews().get(i)) ;
             int amountToTrain= (int)(input.getReviews().get(i). size()* 0.75) ;
-            for(Review review : input.getReviews().get(i).subList(0, amountToTrain))
-            {
-                if(review == null)
-                    continue;
-                String result = review.getReview_text().replaceAll("[\\t\\n\\r]+", " ");
-                zapis.println(i.toString()+".0" + "\t"+result) ;
-            }
-            for(Review review : input.getReviews().get(i).subList(amountToTrain+1,input.getReviews().get(i).size()))
-            {
-                if(review == null)
-                    continue;
-                String result = review.getReview_text().replaceAll("[\\t\\n\\r]+", " ");
-                zapis2.println(i.toString()+".0" + "\t"+result) ;
-            }
+            trainSet.addAll(input.getReviews().get(i).subList(0, amountToTrain)) ;
         }
-
-       /* input = new Input();
-        //PolarityBasic pb = new  PolarityBasic();
-
-        try {
-            input.append(PATH1);
-            //input.append(PATH1);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-        for(Integer i : new Integer[]{4,5})
+        
+        for(Integer i : input.getReviews().keySet())
         {
             int amountToTrain= (int)(input.getReviews().get(i). size()* 0.75) ;
-            for(Review review : input.getReviews().get(i).subList(0, amountToTrain))
-            {
-                String result = review.getReview_text().replaceAll("[\\t\\n\\r]+", " ");
-                zapis.println("positive\t"+result) ;
-            }
-            for(Review review : input.getReviews().get(i).subList(amountToTrain+1,input.getReviews().get(i).size()))
-            {
-                String result = review.getReview_text().replaceAll("[\\t\\n\\r]+", " ");
-                zapis2.println("positive\t"+result) ;
-            }
-        }*/
-        zapis.close();
-        zapis2.close();
+            testSet.addAll(input.getReviews().get(i).subList(amountToTrain+1,input.getReviews().get(i).size())) ;
+        }
+        
+        pb.train(trainSet);
+        pb.evaluate(testSet);
     }
 }
