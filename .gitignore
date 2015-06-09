@@ -38,6 +38,14 @@
 /result/
 /data/svm_data/
 /dist/
+
+# Latex
+doc/*.out
+doc/*.aux
+doc/*.log
+doc/*.synctex.gz
+doc/*.
+
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
