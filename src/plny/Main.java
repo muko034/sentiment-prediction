@@ -1,10 +1,11 @@
 package plny;
 
+import plny.model.*;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.JAXBException;
-import model.*;
 
 
 public class Main {
@@ -35,7 +36,7 @@ public class Main {
         
 
         Input input = new Input();
-        PolarityBasic pb = new  PolarityBasic();
+        PolarityBasic pb = new PolarityBasic();
 
         try {
             input.append(domainsPositive[domain]);
